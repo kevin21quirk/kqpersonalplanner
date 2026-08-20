@@ -50,7 +50,7 @@ const INTEGRATION_DEFS: IntegrationDef[] = [
     emoji: "✉️",
     color: "text-red-400",
     bgAccent: "bg-red-500/10",
-    oauthSupported: false,
+    oauthSupported: true,
   },
   {
     key: "SLACK",
@@ -138,7 +138,7 @@ export default function IntegrationsPanel({ integrations }: IntegrationsPanelPro
 
     setConnecting(def.key);
     try {
-      const res = await fetch("/api/integrations/google");
+      const res = await fetch(`/api/integrations/google?service=${def.key}`);
       if (!res.ok) throw new Error("Failed to get OAuth URL");
       const data: { url: string } = await res.json();
       window.location.href = data.url;

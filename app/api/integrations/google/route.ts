@@ -9,17 +9,39 @@ const oauth2Client = new google.auth.OAuth2(
   `${process.env.NEXTAUTH_URL}/api/integrations/google/callback`
 );
 
-export async function GET() {
-  // Generate OAuth URL
+// Scopes per service — all share the same Google OAuth flow
+const SCOPES: Record<string, string[]> = {
+  GOOGLE_CALENDAR: [
+    "https://www.googleapis.com/auth/calendar",
+    "https://www.googleapis.com/auth/calendar.events",
+    "https://www.googleapis.com/auth/meetings.space.created",
+  ],
+  GOOGLE_MEET: [
+    "https://www.googleapis.com/auth/calendar",
+    "https://www.googleapis.com/auth/calendar.events",
+    "https://www.googleapis.com/auth/meetings.space.created",
+  ],
+  GMAIL: [
+    "https://www.googleapis.com/auth/gmail.readonly",
+    "https://www.googleapis.com/auth/gmail.send",
+    "https://www.googleapis.com/auth/gmail.compose",
+    "https://www.googleapis.com/auth/gmail.modify",
+    "https://mail.google.com/",
+  ],
+};
+
+export async function GET(req: NextRequest) {
+  const service = new URL(req.url).searchParams.get("service") ?? "GOOGLE_CALENDAR";
+  const scopes = SCOPES[service] ?? SCOPES.GOOGLE_CALENDAR;
+
   const url = oauth2Client.generateAuthUrl({
     access_type: "offline",
-    scope: [
-      "https://www.googleapis.com/auth/calendar",
-      "https://www.googleapis.com/auth/calendar.events",
-      "https://www.googleapis.com/auth/meetings.space.created",
-    ],
+    scope: scopes,
     prompt: "consent",
+    // state carries which service initiated the flow so the callback knows
+    state: service,
   });
+
   return NextResponse.json({ url });
 }
 
