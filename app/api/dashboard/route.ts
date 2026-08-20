@@ -47,7 +47,7 @@ export async function GET() {
       prisma.user.findUnique({ where: { id: DEFAULT_USER_ID } }),
     ]);
 
-    const connectedIntegrations = integrations.filter((i) => i.status === "CONNECTED").length;
+    const connectedIntegrations = integrations.filter((i: { status: string }) => i.status === "CONNECTED").length;
 
     return NextResponse.json({
       user,
