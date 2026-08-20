@@ -54,7 +54,7 @@ const navItems: NavSection[] = [
 
 export default function Sidebar({ activeTab, onNavigate }: SidebarProps) {
   return (
-    <aside className="fixed left-0 top-0 h-full w-64 bg-[#090b0f] border-r border-white/5 flex flex-col z-20 select-none">
+    <aside className="w-64 shrink-0 h-screen bg-[#090b0f] border-r border-white/5 flex flex-col z-20 select-none overflow-hidden">
 
       {/* ── Logo ── */}
       <div className="flex items-center gap-3 px-5 py-[18px] border-b border-white/5 shrink-0">

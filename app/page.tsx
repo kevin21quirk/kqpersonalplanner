@@ -101,16 +101,15 @@ export default function HomePage() {
 
   return (
     <div className="flex h-screen overflow-hidden bg-[#0d0f14]">
-      {/* OAuth redirect param handler — must be in Suspense */}
-      <Suspense fallback={null}>
-        <SearchParamsWatcher onParamsChange={handleSearchParams} />
-      </Suspense>
-
-      {/* Sidebar */}
+      {/* Sidebar — shrink-0 so it stays w-64 and main content fills the rest */}
       <Sidebar activeTab={activeTab} onNavigate={setActiveTab} />
 
       {/* Main content */}
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
+      {/* OAuth redirect param handler — rendered inside content column, no layout impact */}
+      <Suspense fallback={null}>
+        <SearchParamsWatcher onParamsChange={handleSearchParams} />
+      </Suspense>
         <Header
           title={PAGE_TITLES[activeTab] ?? "Dashboard"}
           notificationCount={notificationCount}
