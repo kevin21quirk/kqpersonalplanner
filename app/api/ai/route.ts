@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getOpenAI, SYSTEM_PROMPT } from "@/lib/openai";
+import { getOpenAI, SYSTEM_PROMPT, CLAUDE_MODEL } from "@/lib/openai";
 import { prisma } from "@/lib/prisma";
 import { DEFAULT_USER_ID, parseAIAction } from "@/lib/utils";
 
@@ -11,26 +11,26 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Message is required" }, { status: 400 });
     }
 
-    // Build message history for context
-    const messages: { role: "system" | "user" | "assistant"; content: string }[] = [
-      { role: "system", content: SYSTEM_PROMPT },
+    // Anthropic API: system prompt is separate; messages are user/assistant only
+    const messages: { role: "user" | "assistant"; content: string }[] = [
       ...((history ?? []).slice(-10) as { role: "user" | "assistant"; content: string }[]),
       { role: "user", content: message },
     ];
 
     let assistantReply = "";
 
-    if (!process.env.OPENAI_API_KEY || process.env.OPENAI_API_KEY === "your_openai_api_key_here") {
+    if (!process.env.ANTHROPIC_API_KEY) {
       // Fallback demo response when no API key is set
       assistantReply = await generateDemoResponse(message);
     } else {
-      const completion = await getOpenAI().chat.completions.create({
-        model: "gpt-4o",
+      const response = await getOpenAI().messages.create({
+        model: CLAUDE_MODEL,
+        max_tokens: 1024,
+        system: SYSTEM_PROMPT,
         messages,
-        temperature: 0.7,
-        max_tokens: 1000,
       });
-      assistantReply = completion.choices[0]?.message?.content ?? "I'm sorry, I couldn't generate a response.";
+      const block = response.content[0];
+      assistantReply = block.type === "text" ? block.text : "I'm sorry, I couldn't generate a response.";
     }
 
     // Parse any action from the response
@@ -134,19 +134,19 @@ async function generateDemoResponse(message: string): Promise<string> {
     return `I've created a new task for you: "${title}". It's been added to your task list with medium priority.\n\n\`\`\`action\n{"type":"CREATE_TASK","payload":{"title":"${title}","priority":"MEDIUM"}}\n\`\`\``;
   }
   if (lower.includes("meeting") || lower.includes("schedule") || lower.includes("event")) {
-    return "I'd love to schedule that meeting for you! Once you add your OpenAI API key, I can fully parse your request and create the event with all the details automatically.";
+    return "I'd love to schedule that meeting for you! Once you add your **ANTHROPIC_API_KEY** to Vercel, I can fully parse your request and create the event with all the details automatically.";
   }
   if (lower.includes("note")) {
-    return "Great idea! I'll make a note of that. With your OpenAI API key configured, I can intelligently extract the title, content, and tags from your message.";
+    return "Great idea! I'll make a note of that. With your **ANTHROPIC_API_KEY** configured in Vercel, I can intelligently extract the title, content, and tags from your message.";
   }
   if (lower.includes("today") || lower.includes("agenda") || lower.includes("schedule")) {
     const today = new Date().toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long" });
-    return `Here's a summary for ${today}:\n\n• **Team standup** at 9:00 AM\n• **Client call – TechCorp demo** at 2:00 PM\n• **5 tasks** in your queue (1 urgent, 2 high priority)\n\nAdd your OpenAI API key in the settings to enable full natural language planning.`;
+    return `Here's a summary for ${today}:\n\n• **Team standup** at 9:00 AM\n• **Client call – TechCorp demo** at 2:00 PM\n• **5 tasks** in your queue (1 urgent, 2 high priority)\n\nAdd your **ANTHROPIC_API_KEY** in Vercel settings to enable full Claude-powered natural language planning.`;
   }
   if (lower.includes("hello") || lower.includes("hi") || lower.includes("hey")) {
     return "Hello Kevin! 👋 I'm your AI personal assistant for AI Bridge Solutions. I can help you manage tasks, schedule meetings, create notes, and organise your day. What would you like to do?";
   }
-  return `I received your message: *"${message}"*\n\nTo enable full AI capabilities, please add your **OpenAI API key** to the environment settings. I can then understand any natural language instruction and take action across your calendar, tasks, notes, and integrations.`;
+  return `I received your message: *"${message}"*\n\nTo enable full Claude AI capabilities, add your **ANTHROPIC_API_KEY** in Vercel environment settings. I can then understand any natural language instruction and take action across your calendar, tasks, notes, and integrations.`;
 }
 
 export async function GET() {

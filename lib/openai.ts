@@ -1,16 +1,20 @@
-import OpenAI from "openai";
+import Anthropic from "@anthropic-ai/sdk";
 
-// Lazy singleton — the OpenAI constructor throws when apiKey is absent, so we
+// Lazy singleton — Anthropic constructor throws if apiKey is absent, so we
 // must not call it at module evaluation time (Next.js imports every route
 // module during the build-time "Collecting page data" phase).
-let _openai: OpenAI | null = null;
+let _anthropic: Anthropic | null = null;
 
-export function getOpenAI(): OpenAI {
-  if (!_openai) {
-    _openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY ?? "missing" });
+export function getOpenAI(): Anthropic {
+  if (!_anthropic) {
+    _anthropic = new Anthropic({
+      apiKey: process.env.ANTHROPIC_API_KEY ?? "missing",
+    });
   }
-  return _openai;
+  return _anthropic;
 }
+
+export const CLAUDE_MODEL = "claude-opus-4-5";
 
 export const SYSTEM_PROMPT = `You are the AI personal assistant for Kevin, owner of AI Bridge Solutions. 
 You manage his calendar, tasks, notes, meetings, and connected apps.
