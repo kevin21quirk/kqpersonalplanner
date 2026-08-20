@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { openai, SYSTEM_PROMPT } from "@/lib/openai";
+import { getOpenAI, SYSTEM_PROMPT } from "@/lib/openai";
 import { prisma } from "@/lib/prisma";
 import { DEFAULT_USER_ID, parseAIAction } from "@/lib/utils";
 
@@ -24,7 +24,7 @@ export async function POST(req: NextRequest) {
       // Fallback demo response when no API key is set
       assistantReply = await generateDemoResponse(message);
     } else {
-      const completion = await openai.chat.completions.create({
+      const completion = await getOpenAI().chat.completions.create({
         model: "gpt-4o",
         messages,
         temperature: 0.7,

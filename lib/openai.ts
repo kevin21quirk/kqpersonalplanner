@@ -1,8 +1,16 @@
 import OpenAI from "openai";
 
-export const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+// Lazy singleton — the OpenAI constructor throws when apiKey is absent, so we
+// must not call it at module evaluation time (Next.js imports every route
+// module during the build-time "Collecting page data" phase).
+let _openai: OpenAI | null = null;
+
+export function getOpenAI(): OpenAI {
+  if (!_openai) {
+    _openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY ?? "missing" });
+  }
+  return _openai;
+}
 
 export const SYSTEM_PROMPT = `You are the AI personal assistant for Kevin, owner of AI Bridge Solutions. 
 You manage his calendar, tasks, notes, meetings, and connected apps.
