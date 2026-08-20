@@ -126,27 +126,8 @@ async function executeAction(action: { type: string; payload: Record<string, unk
   }
 }
 
-async function generateDemoResponse(message: string): Promise<string> {
-  const lower = message.toLowerCase();
-
-  if (lower.includes("task") && (lower.includes("create") || lower.includes("add"))) {
-    const title = message.replace(/create|add|a task|task/gi, "").trim() || "New Task";
-    return `I've created a new task for you: "${title}". It's been added to your task list with medium priority.\n\n\`\`\`action\n{"type":"CREATE_TASK","payload":{"title":"${title}","priority":"MEDIUM"}}\n\`\`\``;
-  }
-  if (lower.includes("meeting") || lower.includes("schedule") || lower.includes("event")) {
-    return "I'd love to schedule that meeting for you! Once you add your **ANTHROPIC_API_KEY** to Vercel, I can fully parse your request and create the event with all the details automatically.";
-  }
-  if (lower.includes("note")) {
-    return "Great idea! I'll make a note of that. With your **ANTHROPIC_API_KEY** configured in Vercel, I can intelligently extract the title, content, and tags from your message.";
-  }
-  if (lower.includes("today") || lower.includes("agenda") || lower.includes("schedule")) {
-    const today = new Date().toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long" });
-    return `Here's a summary for ${today}:\n\n• **Team standup** at 9:00 AM\n• **Client call – TechCorp demo** at 2:00 PM\n• **5 tasks** in your queue (1 urgent, 2 high priority)\n\nAdd your **ANTHROPIC_API_KEY** in Vercel settings to enable full Claude-powered natural language planning.`;
-  }
-  if (lower.includes("hello") || lower.includes("hi") || lower.includes("hey")) {
-    return "Hello Kevin! 👋 I'm your AI personal assistant for AI Bridge Solutions. I can help you manage tasks, schedule meetings, create notes, and organise your day. What would you like to do?";
-  }
-  return `I received your message: *"${message}"*\n\nTo enable full Claude AI capabilities, add your **ANTHROPIC_API_KEY** in Vercel environment settings. I can then understand any natural language instruction and take action across your calendar, tasks, notes, and integrations.`;
+async function generateDemoResponse(_message: string): Promise<string> {
+  return "To enable the AI assistant, add your **ANTHROPIC_API_KEY** in Vercel → Settings → Environment Variables, then redeploy. Once connected, you can speak naturally — \"Create a task to review the proposal\", \"Schedule a meeting with John on Friday at 2pm\", \"Show me today's agenda\" — and I'll take care of it automatically.";
 }
 
 export async function GET() {

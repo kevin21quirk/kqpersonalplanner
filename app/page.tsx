@@ -61,7 +61,7 @@ export default function HomePage() {
   const [dashboard, setDashboard] = useState<DashboardData>({
     user: null, stats: null, todayEvents: [], weekEvents: [], integrations: [], recentActivities: [],
   });
-  const [seeded, setSeeded] = useState(false);
+  const [initialised, setInitialised] = useState(false);
 
   const fetchDashboard = useCallback(async () => {
     try {
@@ -74,18 +74,13 @@ export default function HomePage() {
     }
   }, []);
 
-  // Seed data once on first load
+  // Ensure user record exists, then load dashboard
   useEffect(() => {
-    if (seeded) return;
-    setSeeded(true);
+    if (initialised) return;
+    setInitialised(true);
     fetch("/api/seed", { method: "POST" })
-      .then((r) => r.json())
-      .then((d) => {
-        if (d.seeded) toast.success("Welcome! Demo data loaded.");
-        fetchDashboard();
-      })
-      .catch(() => fetchDashboard());
-  }, [seeded, fetchDashboard]);
+      .finally(() => fetchDashboard());
+  }, [initialised, fetchDashboard]);
 
   const handleSearchParams = useCallback((params: URLSearchParams) => {
     const connected = params.get("connected");
